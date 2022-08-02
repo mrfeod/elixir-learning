@@ -17,14 +17,14 @@ defmodule Worker do
 
   defp handle_message(message, state) do
     case message do
-      {:job, job, sender} ->
+      {:job, request_id, job, sender} ->
         job_id = make_ref()
-        send(sender, {:job_id, job_id})
+        send(sender, {:job_id, request_id, job_id})
         state = Map.put_new(state, job_id, job.())
         state
 
-      {:job_id, job_id, sender} ->
-        send(sender, {:result, Map.get(state, job_id, :no_job)})
+      {:job_id, request_id, job_id, sender} ->
+        send(sender, {:result, request_id, Map.get(state, job_id, :no_job)})
         state
 
       _ ->

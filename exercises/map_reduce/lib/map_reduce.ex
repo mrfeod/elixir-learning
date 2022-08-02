@@ -9,35 +9,44 @@ defmodule MapReduce do
   end
 
   def execute(worker, job) do
-    ref = Process.monitor(worker)
-    send(worker, {:job, job, self()})
+    monitor = Process.monitor(worker)
+    request_id = make_ref()
+    send(worker, {:job, request_id, job, self()})
 
-    receive do
-      {:job_id, job_id} ->
+    res = receive do
+      {:job_id, ^request_id, job_id} ->
         job_id
 
-      {:DOWN, ^ref, _, _, _} ->
+      {:DOWN, ^monitor, _, _, _} ->
         :worker_fault
     after
       1_000 -> :worker_fault
     end
+
+    Process.demonitor(monitor)
+    res
   end
 
   def get_result(worker, job_id) do
-    ref = Process.monitor(worker)
-    send(worker, {:job_id, job_id, self()})
+    monitor = Process.monitor(worker)
+    request_id = make_ref()
+    send(worker, {:job_id, request_id, job_id, self()})
 
-    receive do
-      {:result, result} ->
+    res = receive do
+      {:result, ^request_id, result} ->
         result
 
-      {:DOWN, ^ref, _, _, _} ->
+      {:DOWN, ^monitor, _, _, _} ->
         :worker_fault
     after
       1_000 -> :worker_fault
     end
+
+    Process.demonitor(monitor)
+    res
   end
 
+  # TODO jobs - list of lambdas
   def reduce(worker, jobs, reducer) do
     reduced =
       Enum.map_reduce(jobs, 0, fn job, acc ->
