@@ -16,10 +16,8 @@ defmodule MapReduce do
       {:job_id, job_id} ->
         job_id
 
-      message when is_tuple(message) ->
-        if elem(message, 0) == :DOWN and elem(message, 1) == ref do
-          :worker_fault
-        end
+      {:DOWN, ^ref, _, _, _} ->
+        :worker_fault
     after
       1_000 -> :worker_fault
     end
@@ -33,10 +31,8 @@ defmodule MapReduce do
       {:result, result} ->
         result
 
-      message when is_tuple(message) ->
-        if elem(message, 0) == :DOWN and elem(message, 1) == ref do
-          :worker_fault
-        end
+      {:DOWN, ^ref, _, _, _} ->
+        :worker_fault
     after
       1_000 -> :worker_fault
     end
