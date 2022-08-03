@@ -42,11 +42,13 @@ defmodule MapReduceTest do
 
   test "Reduce results" do
     worker = MapReduce.create()
-    jobs = []
-    jobs = [MapReduce.execute(worker, fn -> 1 + 1 end) | jobs]
-    jobs = [MapReduce.execute(worker, fn -> 2 + 2 end) | jobs]
-    jobs = [MapReduce.execute(worker, fn -> 3 + 3 end) | jobs]
-    reduced = MapReduce.reduce(worker, jobs, fn l, r -> l + r end)
+    reduced = MapReduce.reduce(worker, [fn -> 1 + 1 end, fn -> 2 + 2 end, fn -> 3 + 3 end], fn l, r -> (l || 0) + (r || 0) end)
     assert reduced == 1 + 1 + 2 + 2 + 3 + 3
+  end
+
+  test "Reduce strings" do
+    worker = MapReduce.create()
+    reduced = MapReduce.reduce(worker, [fn -> "Hello" end, fn -> " " end, fn -> "World" end], fn l, r -> (l || "") <> (r || "") end)
+    assert reduced == "Hello World"
   end
 end

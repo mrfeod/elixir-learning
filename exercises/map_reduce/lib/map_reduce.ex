@@ -46,14 +46,13 @@ defmodule MapReduce do
     res
   end
 
-  # TODO jobs - list of lambdas
   def reduce(worker, jobs, reducer) do
     reduced =
-      Enum.map_reduce(jobs, 0, fn job, acc ->
+      Enum.map_reduce(jobs, nil, fn job, acc ->
         result =
-          case get_result(worker, job) do
-            :worker_fault -> 0
-            :no_job -> 0
+          case get_result(worker, execute(worker, job)) do
+            :worker_fault -> nil
+            :no_job -> nil
             value -> value
           end
 
