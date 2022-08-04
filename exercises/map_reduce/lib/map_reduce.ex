@@ -10,7 +10,7 @@ defmodule MapReduce do
   end
 
   def execute(worker, job) do
-    {_type, job_id} = Worker.add_job(worker, job, 1000)
+    {_type, job_id} = Worker.add_job(worker, job, 100)
     job_id
   end
 

@@ -6,7 +6,7 @@ defmodule MapReduceApp.MapReduce do
   alias MapReduceApp.Worker, as: Worker
 
   def execute(worker_id, job) do
-    {_type, job_id} = Worker.add_job(worker_id, job, 1000)
+    {_type, job_id} = Worker.add_job(worker_id, job, 100)
     job_id
   end
 

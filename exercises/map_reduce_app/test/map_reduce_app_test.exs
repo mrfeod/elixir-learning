@@ -11,7 +11,6 @@ defmodule MapReduceAppTest do
     assert is_reference(job)
   end
 
-  @tag :skip
   test "Execute the job on non-existent worker" do
     not_worker = :c.pid(0, 123, 123)
     job = MapReduce.execute(not_worker, fn -> :ok end)
@@ -24,12 +23,9 @@ defmodule MapReduceAppTest do
     assert result == 3
   end
 
-  @tag :skip
-  test "Get busy job result" do
-    job = MapReduce.execute(Worker, fn -> :timer.sleep(1001) end)
-    result = MapReduce.get_result(Worker, job)
+  test "Execute busy job" do
+    job = MapReduce.execute(Worker, fn -> :timer.sleep(101) end)
     assert job == nil
-    assert result == nil
   end
 
   test "Get non-existent job result" do
