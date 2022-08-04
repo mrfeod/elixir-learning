@@ -23,15 +23,14 @@ defmodule MapReduceApp.Worker do
   end
 
   @impl true
-  def handle_call(request, _from, state) do
-    case request do
-      {:job, job} ->
-        job_id = make_ref()
-        new_state = Map.put_new(state, job_id, job.())
-        {:reply, {:job_id, job_id}, new_state}
+  def handle_call({:job, job}, _from, state) do
+    job_id = make_ref()
+    new_state = Map.put_new(state, job_id, job.())
+    {:reply, {:job_id, job_id}, new_state}
+  end
 
-      {:job_id, job_id} ->
-        {:reply, {:result, Map.get(state, job_id, nil)}, state}
-    end
+  @impl true
+  def handle_call({:job_id, job_id}, _from, state) do
+    {:reply, {:result, Map.get(state, job_id, nil)}, state}
   end
 end

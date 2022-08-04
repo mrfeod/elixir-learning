@@ -4,7 +4,7 @@ defmodule MapReduceAppTest do
   """
   use ExUnit.Case
 
-  alias MapReduceApp.MapReduce, as: MapReduce
+  alias MapReduceApp.MapReduce
 
   test "Execute the job" do
     job = MapReduce.execute(Worker, fn -> :ok end)

@@ -3,7 +3,7 @@ defmodule MapReduceApp.MapReduce do
   Documentation for `MapReduce`.
   """
 
-  alias MapReduceApp.Worker, as: Worker
+  alias MapReduceApp.Worker
 
   def execute(worker_id, job) do
     {_type, job_id} = Worker.add_job(worker_id, job, 100)
