@@ -10,14 +10,10 @@ defmodule MapReduceApp.Worker do
 
   def add_job(worker_id, job, timeout) when is_function(job, 0) do
     GenServer.call(worker_id, {:job, job}, timeout)
-  catch
-    :exit, _ -> {:fail, nil}
   end
 
   def get_result(worker_id, job_id, timeout) when is_reference(job_id) do
     GenServer.call(worker_id, {:job_id, job_id}, timeout)
-  catch
-    :exit, _ -> {:fail, nil}
   end
 
   # GenServer Callbacks
