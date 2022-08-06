@@ -14,6 +14,14 @@ defmodule MapReduceApp.Application do
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
-    Supervisor.start_link(children, strategy: :one_for_all)
+    [
+      %{
+        id: :rootsv,
+        start:
+          {Supervisor, :start_link,
+           [children, [name: MapReduceApp.RootSupervisor, strategy: :rest_for_one]]}
+      }
+    ]
+    |> Supervisor.start_link(strategy: :one_for_all)
   end
 end
