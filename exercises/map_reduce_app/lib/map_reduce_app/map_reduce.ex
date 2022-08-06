@@ -16,12 +16,9 @@ defmodule MapReduceApp.MapReduce do
   end
 
   def reduce(worker_id, jobs, reducer) do
-    reduced =
-      Enum.map_reduce(jobs, nil, fn job, acc ->
-        result = get_result(worker_id, execute(worker_id, job))
-        {result, reducer.(acc, result)}
-      end)
-
-    elem(reduced, 1)
+    Enum.reverse(jobs)
+    |> Enum.map(fn job -> execute(worker_id, job) end)
+    |> Enum.map(fn job_id -> get_result(worker_id, job_id) end)
+    |> Enum.reduce(nil, reducer)
   end
 end
