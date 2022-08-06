@@ -15,11 +15,14 @@ defmodule MapReduceApp.MapReduce do
     result
   end
 
-  def reduce(worker_id, jobs, reducer) do
-    Enum.reverse(jobs)
-    |> Enum.map(fn job -> execute(worker_id, job) end)
-    |> Enum.map(fn job_id -> get_result(worker_id, job_id) end)
-    |> Enum.reduce(nil, reducer)
+  def get_result(job_id) do
+    receive do
+      {:result, ^job_id, result} ->
+        result
+    after
+      100 ->
+        raise "Timeout"
+    end
   end
 
   def select_worker do
@@ -28,8 +31,13 @@ defmodule MapReduceApp.MapReduce do
   end
 
   def select_and_execute(job) do
-    worker_id = select_worker()
-    job_id = execute(worker_id, job)
-    get_result(worker_id, job_id)
+    execute(select_worker(), job)
+  end
+
+  def reduce(jobs, reducer) do
+    Enum.reverse(jobs)
+    |> Enum.map(fn job -> select_and_execute(job) end)
+    |> Enum.map(fn job_id -> get_result(job_id) end)
+    |> Enum.reduce(reducer)
   end
 end

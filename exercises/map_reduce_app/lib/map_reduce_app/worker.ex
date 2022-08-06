@@ -9,7 +9,7 @@ defmodule MapReduceApp.Worker do
   end
 
   def add_job(worker_id, job, timeout) when is_function(job, 0) do
-    GenServer.call(worker_id, {:job, job}, timeout)
+    GenServer.call(worker_id, {:job, self(), job}, timeout)
   end
 
   def get_result(worker_id, job_id, timeout) when is_reference(job_id) do
@@ -23,10 +23,14 @@ defmodule MapReduceApp.Worker do
   end
 
   @impl true
-  def handle_call({:job, job}, _from, state) do
+  def handle_call({:job, reply_to, job}, from, state) do
     job_id = make_ref()
-    new_state = Map.put_new(state, job_id, job.())
-    {:reply, {:job_id, job_id}, new_state}
+    GenServer.reply(from, {:job_id, job_id})
+
+    result = job.()
+    new_state = Map.put_new(state, job_id, result)
+    send(reply_to, {:result, job_id, result})
+    {:noreply, new_state}
   end
 
   @impl true
