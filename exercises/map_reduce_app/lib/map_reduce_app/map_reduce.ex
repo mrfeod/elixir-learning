@@ -21,4 +21,15 @@ defmodule MapReduceApp.MapReduce do
     |> Enum.map(fn job_id -> get_result(worker_id, job_id) end)
     |> Enum.reduce(nil, reducer)
   end
+
+  def select_worker do
+    workers = MapReduceApp.Supervisor.workers()
+    Enum.at(workers, :rand.uniform(length(workers)) - 1)
+  end
+
+  def select_and_execute(job) do
+    worker_id = select_worker()
+    job_id = execute(worker_id, job)
+    get_result(worker_id, job_id)
+  end
 end
