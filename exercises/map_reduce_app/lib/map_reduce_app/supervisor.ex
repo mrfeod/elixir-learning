@@ -7,15 +7,20 @@ defmodule MapReduceApp.Supervisor do
   end
 
   def workers do
-    for n <- 1..System.schedulers_online() do
-      {:via, Registry, {Registry.MapReduceApp, n}}
-    end
+    :persistent_term.get(:workers)
   end
 
   @impl true
   def init(:ok) do
+    workers =
+      for n <- 1..System.schedulers_online() do
+        {:via, Registry, {Registry.MapReduceApp, n}}
+      end
+
+    :persistent_term.put(:workers, workers)
+
     children =
-      Enum.map(workers(), fn id ->
+      Enum.map(workers, fn id ->
         {_, _, {_, child_id}} = id
 
         %{
