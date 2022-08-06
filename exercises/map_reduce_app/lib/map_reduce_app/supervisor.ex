@@ -8,7 +8,7 @@ defmodule MapReduceApp.Supervisor do
 
   def workers do
     for n <- 1..System.schedulers_online() do
-      {:via, Registry, {Registry.MapReduceApp, String.to_atom("worker_#{n}")}}
+      {:via, Registry, {Registry.MapReduceApp, n}}
     end
   end
 
