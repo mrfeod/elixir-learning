@@ -5,7 +5,7 @@ defmodule MapReduceApp.Worker do
   use GenServer
 
   def start_link(args) do
-    GenServer.start_link(__MODULE__, %{}, name: Map.get(args, :name))
+    GenServer.start_link(__MODULE__, %{}, name: Map.fetch!(args, :name))
   end
 
   def add_job(worker_id, job, timeout) when is_function(job, 0) do
