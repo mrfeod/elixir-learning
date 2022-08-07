@@ -9,7 +9,8 @@ defmodule MapReduceApp.Application do
   def start(_type, _args) do
     children = [
       {Registry, [keys: :unique, name: Registry.MapReduceApp]},
-      MapReduceApp.Supervisor
+      MapReduceApp.ReduceSupervisor,
+      MapReduceApp.WorkerSupervisor
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

@@ -25,7 +25,7 @@ defmodule MapReduceApp.Worker do
   @impl true
   def handle_call({:job, reply_to, job}, from, state) do
     job_id = make_ref()
-    GenServer.reply(from, {:job_id, job_id})
+    GenServer.reply(from, {:job_id, job_id, self()})
 
     result = job.()
     new_state = Map.put_new(state, job_id, result)

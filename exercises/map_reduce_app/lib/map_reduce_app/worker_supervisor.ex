@@ -1,4 +1,4 @@
-defmodule MapReduceApp.Supervisor do
+defmodule MapReduceApp.WorkerSupervisor do
   @moduledoc false
   use Supervisor
 
@@ -29,6 +29,6 @@ defmodule MapReduceApp.Supervisor do
         }
       end)
 
-    Supervisor.init(children, strategy: :one_for_all)
+    Supervisor.init(children, strategy: :one_for_one)
   end
 end

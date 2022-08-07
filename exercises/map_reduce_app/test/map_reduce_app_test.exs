@@ -31,7 +31,7 @@ defmodule MapReduceAppTest do
   end
 
   test "Select and execute" do
-    job = MapReduce.select_and_execute(fn -> :ok end)
+    {job, _worker_pid} = MapReduce.select_and_execute(fn -> :ok end)
     result = MapReduce.get_result(job)
     assert result == :ok
   end
