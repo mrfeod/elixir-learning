@@ -35,9 +35,12 @@ defmodule MapReduceApp.Reducer do
 
   @impl true
   def handle_call({:job, job}, from, state) do
-    {job_id, worker_pid} = MapReduce.select_and_execute(job)
+    {job_id, worker_pid, worker_id} = MapReduce.select_and_execute(job)
     Process.link(worker_pid)
-    new_state = Map.put(state, :job_ids, Map.put(state.job_ids, job_id, {from, worker_pid}))
+
+    new_state =
+      Map.put(state, :job_ids, Map.put(state.job_ids, job_id, {from, worker_pid, worker_id}))
+
     {:reply, {:job_id, job_id}, new_state}
   end
 
@@ -48,8 +51,9 @@ defmodule MapReduceApp.Reducer do
 
   @impl true
   def handle_info({:result, job_id, result}, state) do
-    {{from, worker_pid}, new_job_ids} = Map.pop(state.job_ids, job_id)
+    {{from, worker_pid, worker_id}, new_job_ids} = Map.pop(state.job_ids, job_id)
     Process.unlink(worker_pid)
+    MapReduceApp.WorkerSupervisor.free_worker(worker_id)
     GenServer.reply(from, {:done, job_id})
     new_acc = state.reducer.(state.acc, result)
     {:noreply, Map.merge(state, %{acc: new_acc, job_ids: new_job_ids})}
@@ -72,12 +76,12 @@ defmodule MapReduceApp.Reducer do
           state
 
         job_ids ->
-          Process.unlink(pid)
           {failed_job_ids, new_job_ids} = Map.split(state.job_ids, job_ids)
 
           _ =
             Enum.map(failed_job_ids, fn
-              {job_id, {from, ^pid}} ->
+              {job_id, {from, ^pid, worker_id}} ->
+                MapReduceApp.WorkerSupervisor.free_worker(worker_id)
                 GenServer.reply(from, {:fail, job_id})
             end)
 

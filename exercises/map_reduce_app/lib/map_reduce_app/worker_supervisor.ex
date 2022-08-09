@@ -12,27 +12,33 @@ defmodule MapReduceApp.WorkerSupervisor do
 
   defp get_busy_workers do
     case :ets.lookup(:queue, :workers) do
-      [] -> []
-      data -> {:workers, busy} = data |> List.first; busy
+      [] ->
+        []
+
+      data ->
+        {:workers, busy} = data |> List.first()
+        busy
     end
   end
 
-  defp set_busy_workers busy do
+  defp set_busy_workers(busy) do
     :ets.insert(:queue, {:workers, busy})
   end
 
   def select_worker do
     busy = get_busy_workers()
     worker = workers() |> Enum.reject(fn worker -> Enum.member?(busy, worker) end) |> Enum.at(0)
+
     if worker do
-      set_busy_workers [worker | busy]
+      set_busy_workers([worker | busy])
     end
+
     worker
   end
 
   def free_worker(worker) do
     busy = get_busy_workers()
-    set_busy_workers List.delete(busy, worker)
+    set_busy_workers(List.delete(busy, worker))
   end
 
   @impl true

@@ -6,33 +6,14 @@ defmodule MapReduceAppTest do
 
   alias MapReduceApp.MapReduce
 
-  setup do
-    {:ok, worker: MapReduce.select_worker()}
-  end
-
-  test "Execute the job", %{:worker => worker_id} do
-    job = MapReduce.execute(worker_id, fn -> 1 + 2 end)
-    result = MapReduce.get_result(job)
-    result_state = MapReduce.get_result(worker_id, job)
-    assert is_reference(job)
-    assert result == 3
-    assert result == result_state
-  end
-
   test "Get non-existent job result" do
     job = make_ref()
-    assert_raise RuntimeError, "Timeout", fn -> MapReduce.get_result(job) end
-  end
-
-  test "Get non-existent job result by worker", %{:worker => worker_id} do
-    job = make_ref()
-    result = MapReduce.get_result(worker_id, job)
-    assert result == nil
+    assert_raise RuntimeError, "Timeout", fn -> MapReduce.get_result({job, nil}) end
   end
 
   test "Select and execute" do
-    {job, _worker_pid} = MapReduce.select_and_execute(fn -> :ok end)
-    result = MapReduce.get_result(job)
+    {job, _worker_pid, worker_id} = MapReduce.select_and_execute(fn -> :ok end)
+    result = MapReduce.get_result({job, worker_id})
     assert result == :ok
   end
 
@@ -58,7 +39,7 @@ defmodule MapReduceAppTest do
     jobs = [
       fn -> 1 + 1 end,
       fn ->
-        Process.sleep(101)
+        Process.sleep(1001)
         2 + 2
       end,
       fn -> 3 + 3 end
