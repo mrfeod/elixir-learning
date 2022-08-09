@@ -10,6 +10,31 @@ defmodule MapReduceApp.WorkerSupervisor do
     :persistent_term.get(:workers)
   end
 
+  defp get_busy_workers do
+    case :ets.lookup(:queue, :workers) do
+      [] -> []
+      data -> {:workers, busy} = data |> List.first; busy
+    end
+  end
+
+  defp set_busy_workers busy do
+    :ets.insert(:queue, {:workers, busy})
+  end
+
+  def select_worker do
+    busy = get_busy_workers()
+    worker = workers() |> Enum.reject(fn worker -> Enum.member?(busy, worker) end) |> Enum.at(0)
+    if worker do
+      set_busy_workers [worker | busy]
+    end
+    worker
+  end
+
+  def free_worker(worker) do
+    busy = get_busy_workers()
+    set_busy_workers List.delete(busy, worker)
+  end
+
   @impl true
   def init(:ok) do
     workers =
@@ -18,6 +43,7 @@ defmodule MapReduceApp.WorkerSupervisor do
       end
 
     :persistent_term.put(:workers, workers)
+    :ets.new(:queue, [:set, :public, :named_table])
 
     children =
       Enum.map(workers, fn id ->
